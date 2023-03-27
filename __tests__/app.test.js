@@ -34,7 +34,10 @@ describe("/api/categories", () => {
         });
       });
   });
-  test("404 GET responds with not found when passed incorrect path", () => {
+});
+
+describe("invalid path errors", () => {
+  test("404 GET responds with not found when passed incorrect path after /api/", () => {
     return request(app)
       .get("/api/sausages")
       .expect(404)
@@ -42,7 +45,7 @@ describe("/api/categories", () => {
         expect(body.msg).toBe("Data not found");
       });
   });
-  test("404 GET responds with not found when passed incorrect path", () => {
+  test("404 GET responds with not found when passed incorrect path without /api/", () => {
     return request(app)
       .get("/sausages")
       .expect(404)
