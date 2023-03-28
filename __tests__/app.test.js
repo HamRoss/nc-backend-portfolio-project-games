@@ -134,3 +134,49 @@ describe("/api/reviews", () => {
       });
   });
 });
+
+describe("/api/reviews/:review_id/comments REPEATED", () => {
+  test("201 POST responds with posted comment", () => {
+    const newComment = { username: "mallionaire", body: "Wow. Such fun" };
+    return request(app)
+      .post("/api/reviews/5/comments")
+      .send(newComment)
+      .expect(201)
+      .then(({ body }) => {
+        const { comment } = body;
+        expect(comment).toMatchObject({
+          comment_id: expect.any(Number),
+          body: expect.any(String),
+          review_id: expect.any(Number),
+          author: expect.any(String),
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+        });
+      });
+  });
+  test("400 POST will return bad request message if input body is missing required fields", () => {
+    const newComment = { body: "This body is missing a username" };
+    return request(app)
+      .post("/api/reviews/7/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Missing required field(s)");
+      });
+  });
+  test("400 POST will return bad request if input body has all required fields, but user does not exist", () => {
+    const newComment = {
+      username: "RossHamilton",
+      body: "This user does not exist",
+    };
+    return request(app)
+      .post("/api/reviews/7/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Username does not exist");
+      });
+  });
+});

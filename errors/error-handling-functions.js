@@ -9,6 +9,10 @@ const handleCustomErrors = (err, req, res, next) => {
 const handlePsqlErrors = (err, req, res, next) => {
   if (err.code === "22P02") {
     res.status(400).send({ msg: "Bad request" });
+  } else if (err.code === "23502") {
+    res.status(400).send({ msg: "Missing required field(s)" });
+  } else if (err.code === "23503") {
+    res.status(400).send({ msg: "Username does not exist" });
   } else {
     next(err);
   }

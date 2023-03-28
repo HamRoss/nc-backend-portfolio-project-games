@@ -29,4 +29,20 @@ function fetchReviews() {
   });
 }
 
-module.exports = { fetchReview, fetchReviews };
+function insertReviewComment(author, body, reviewId) {
+  const queryString = `
+INSERT INTO comments
+(body, review_id, author)
+VALUES ($1, $2, $3)
+RETURNING *;
+`;
+
+  const values = [body, reviewId, author];
+
+  return db.query(queryString, values).then((response) => {
+    console.log(response);
+    return response.rows[0];
+  });
+}
+
+module.exports = { fetchReview, fetchReviews, insertReviewComment };
