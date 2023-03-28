@@ -8,6 +8,7 @@ const seed = require("../db/seeds/seed.js");
 const app = require("../app.js");
 const db = require("../db/connection.js");
 const request = require("supertest");
+require("jest-sorted");
 const { checkDescendingOrder } = require("../db/seeds/utils");
 
 beforeAll(() => {
@@ -96,7 +97,22 @@ describe("api/reviews/:review_id", () => {
       });
   });
 });
-
+describe("/api/reviews/:review_id/comments", () => {
+  test("200 GET responds with an array of review comments if the review_id exists and has associated comments", () => {
+    return request(app)
+      .get("/api/reviews/3/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+        expect(comments).toHaveLength(3);
+        comments.forEach((comment) => {
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(Number),
+            author: expect.any(String),
+            body: expect.any(String),
+            review_id: expect.any(Number),
 describe("/api/reviews", () => {
   test("200 GET responds with array of review objects, including comment count", () => {
     return request(app)
@@ -121,6 +137,45 @@ describe("/api/reviews", () => {
         });
       });
   });
+
+  test("200 GET array of reviews should be in descending order by created_at", () => {
+    return request(app)
+      .get("/api/reviews/3/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+        const mappedComments = comments.map((comment) => {
+          return comment.created_at;
+        });
+        expect(mappedComments).toBeSorted({ descending: true });
+      });
+  });
+  test("404 GET responds with not found if review_id is valid but does not exist", () => {
+    return request(app)
+      .get("/api/reviews/999/comments")
+      .expect(404)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("No review found for review_id 999");
+      });
+  });
+  test("400 GET responds with bad request if review_id is not valid number", () => {
+    return request(app)
+      .get("/api/reviews/notNumber/comments")
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Bad request");
+      });
+  });
+  test("200 GET responds with an empty array if review_id exists, but has no comments associated with it", () => {
+    return request(app)
+      .get("/api/reviews/1/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+        expect(comments).toEqual([]);
+
   test("200 GET review objects should be sorted by date in descending order by default", () => {
     return request(app)
       .get("/api/reviews")
