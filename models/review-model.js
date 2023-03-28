@@ -40,7 +40,6 @@ RETURNING *;
   const values = [body, reviewId, author];
 
   return db.query(queryString, values).then((response) => {
-    console.log(response);
     return response.rows[0];
   });
 }

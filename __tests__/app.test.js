@@ -146,9 +146,9 @@ describe("/api/reviews/:review_id/comments REPEATED", () => {
         const { comment } = body;
         expect(comment).toMatchObject({
           comment_id: expect.any(Number),
-          body: expect.any(String),
+          body: "Wow. Such fun",
           review_id: expect.any(Number),
-          author: expect.any(String),
+          author: "mallionaire",
           votes: expect.any(Number),
           created_at: expect.any(String),
         });
@@ -173,10 +173,60 @@ describe("/api/reviews/:review_id/comments REPEATED", () => {
     return request(app)
       .post("/api/reviews/7/comments")
       .send(newComment)
+      .expect(404)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Not found");
+      });
+  });
+  test("201 POST will ignore unnecessary properties", () => {
+    const newComment = {
+      username: "mallionaire",
+      body: "Amaze. Such game",
+      unecessary_property: "This should be ignored",
+    };
+    return request(app)
+      .post("/api/reviews/6/comments")
+      .send(newComment)
+      .expect(201)
+      .then(({ body }) => {
+        const { comment } = body;
+        expect(comment).toMatchObject({
+          comment_id: expect.any(Number),
+          body: "Amaze. Such game",
+          review_id: expect.any(Number),
+          author: "mallionaire",
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+        });
+      });
+  });
+  test("400 POST will return bad request error message if id is invalid", () => {
+    const newComment = {
+      username: "mallionaire",
+      body: "Such doge. Wow",
+    };
+    return request(app)
+      .post("/api/reviews/sausage/comments")
+      .send(newComment)
       .expect(400)
       .then(({ body }) => {
         const { msg } = body;
-        expect(msg).toBe("Username does not exist");
+        expect(msg).toBe("Bad request");
+      });
+  });
+  test("404 POST will return not found error message if review id is valid but does not exist", () => {
+    const newComment = {
+      username: "mallionaire",
+      body: "Wuuuuuuuuuuew. Mighty fine game you got here",
+    };
+    return request(app)
+      .post("/api/reviews/9999/comments")
+      .send(newComment)
+      .expect(404)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Not found");
       });
   });
 });

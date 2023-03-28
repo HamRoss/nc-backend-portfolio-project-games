@@ -12,7 +12,7 @@ const handlePsqlErrors = (err, req, res, next) => {
   } else if (err.code === "23502") {
     res.status(400).send({ msg: "Missing required field(s)" });
   } else if (err.code === "23503") {
-    res.status(400).send({ msg: "Username does not exist" });
+    res.status(404).send({ msg: "Not found" });
   } else {
     next(err);
   }
