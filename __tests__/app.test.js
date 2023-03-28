@@ -8,6 +8,7 @@ const seed = require("../db/seeds/seed.js");
 const app = require("../app.js");
 const db = require("../db/connection.js");
 const request = require("supertest");
+const { checkDescendingOrder } = require("../db/seeds/utils");
 
 beforeAll(() => {
   return seed({ categoryData, reviewData, userData, commentData });
@@ -92,6 +93,44 @@ describe("api/reviews/:review_id", () => {
       .then(({ body }) => {
         const { msg } = body;
         expect(msg).toBe("Bad request");
+      });
+  });
+});
+
+describe("/api/reviews", () => {
+  test("200 GET responds with array of review objects, including comment count", () => {
+    return request(app)
+      .get("/api/reviews")
+      .expect(200)
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews).toHaveLength(13);
+
+        reviews.forEach((review) => {
+          expect(review).toMatchObject({
+            review_id: expect.any(Number),
+            owner: expect.any(String),
+            title: expect.any(String),
+            category: expect.any(String),
+            review_img_url: expect.any(String),
+            created_at: expect.any(Number),
+            votes: expect.any(Number),
+            designer: expect.any(String),
+            comment_count: expect.any(Number),
+          });
+        });
+      });
+  });
+  test("200 GET review objects should be sorted by date in descending order by default", () => {
+    return request(app)
+      .get("/api/reviews")
+      .expect(200)
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews).toHaveLength(13);
+        expect(
+          checkDescendingOrder(reviews.map((review) => review.created_at))
+        ).toBe(true);
       });
   });
 });

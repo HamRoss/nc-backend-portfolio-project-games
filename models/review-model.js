@@ -15,4 +15,18 @@ function fetchReview(id) {
   });
 }
 
-module.exports = { fetchReview };
+function fetchReviews() {
+  const queryString =
+    "SELECT reviews.review_id, owner, title, category, review_img_url, reviews.created_at, reviews.votes, designer, COUNT(comments.comment_id) as comment_count FROM reviews LEFT JOIN comments ON reviews.review_id = comments.review_id GROUP BY reviews.review_id, reviews.owner, reviews.title, reviews.category, reviews.review_img_url, reviews.created_at, reviews.votes, reviews.designer ORDER BY reviews.created_at DESC;";
+  return db.query(queryString).then((res) => {
+    const reviews = res.rows;
+    const mappedReviews = reviews.map((review) => {
+      review.comment_count = Number(review.comment_count);
+      review.created_at = Number(review.created_at);
+      return review;
+    });
+    return mappedReviews;
+  });
+}
+
+module.exports = { fetchReview, fetchReviews };

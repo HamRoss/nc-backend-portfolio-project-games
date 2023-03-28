@@ -1,4 +1,4 @@
-const { fetchReview } = require("../models/review-model.js");
+const { fetchReview, fetchReviews } = require("../models/review-model.js");
 
 function getReview(req, res, next) {
   const { review_id } = req.params;
@@ -11,4 +11,10 @@ function getReview(req, res, next) {
     });
 }
 
-module.exports = { getReview };
+function getReviews(req, res, next) {
+  fetchReviews().then((reviews) => {
+    res.status(200).send({ reviews });
+  });
+}
+
+module.exports = { getReview, getReviews };
