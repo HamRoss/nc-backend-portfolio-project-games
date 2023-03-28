@@ -1,11 +1,16 @@
 const express = require("express");
 const app = express();
 const { getCategories } = require("./controllers/category-controller");
-const { getReview } = require("./controllers/review-controller");
+const {
+  getReview,
+  getReviewComments,
+} = require("./controllers/review-controller");
 
 app.get("/api/categories", getCategories);
 
 app.get("/api/reviews/:review_id", getReview);
+
+app.get("/api/reviews/:review_id/comments", getReviewComments);
 
 app.use("*", (req, res, next) => {
   next({ status: 404, msg: "Data not found" });
