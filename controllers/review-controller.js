@@ -4,6 +4,7 @@ const {
   checkReviewIdExists,
 } = require("../models/review-model.js");
 
+
 function getReview(req, res, next) {
   const { review_id } = req.params;
   fetchReview(review_id)
@@ -34,4 +35,10 @@ function getReviewComments(req, res, next) {
     });
 }
 
-module.exports = { getReview, getReviewComments };
+function getReviews(req, res, next) {
+  fetchReviews().then((reviews) => {
+    res.status(200).send({ reviews });
+  });
+}
+
+module.exports = { getReview, getReviews getReviewComments};
