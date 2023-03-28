@@ -57,6 +57,45 @@ describe("invalid path errors", () => {
   });
 });
 
+describe("/api/reviews", () => {
+  test("200 GET responds with array of review objects, including comment count", () => {
+    return request(app)
+      .get("/api/reviews")
+      .expect(200)
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews).toHaveLength(13);
+
+        reviews.forEach((review) => {
+          expect(review).toMatchObject({
+            review_id: expect.any(Number),
+            owner: expect.any(String),
+            title: expect.any(String),
+            category: expect.any(String),
+            review_img_url: expect.any(String),
+            created_at: expect.any(Number),
+            votes: expect.any(Number),
+            designer: expect.any(String),
+            comment_count: expect.any(Number),
+          });
+        });
+      });
+  });
+
+  test("200 GET review objects should be sorted by date in descending order by default", () => {
+    return request(app)
+      .get("/api/reviews")
+      .expect(200)
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews).toHaveLength(13);
+        expect(
+          checkDescendingOrder(reviews.map((review) => review.created_at))
+        ).toBe(true);
+      });
+  });
+});
+
 describe("api/reviews/:review_id", () => {
   test("200 GET responds with a single review object with all required properties", () => {
     return request(app)
@@ -113,26 +152,6 @@ describe("/api/reviews/:review_id/comments", () => {
             author: expect.any(String),
             body: expect.any(String),
             review_id: expect.any(Number),
-describe("/api/reviews", () => {
-  test("200 GET responds with array of review objects, including comment count", () => {
-    return request(app)
-      .get("/api/reviews")
-      .expect(200)
-      .then(({ body }) => {
-        const { reviews } = body;
-        expect(reviews).toHaveLength(13);
-
-        reviews.forEach((review) => {
-          expect(review).toMatchObject({
-            review_id: expect.any(Number),
-            owner: expect.any(String),
-            title: expect.any(String),
-            category: expect.any(String),
-            review_img_url: expect.any(String),
-            created_at: expect.any(Number),
-            votes: expect.any(Number),
-            designer: expect.any(String),
-            comment_count: expect.any(Number),
           });
         });
       });
@@ -175,17 +194,6 @@ describe("/api/reviews", () => {
       .then(({ body }) => {
         const { comments } = body;
         expect(comments).toEqual([]);
-
-  test("200 GET review objects should be sorted by date in descending order by default", () => {
-    return request(app)
-      .get("/api/reviews")
-      .expect(200)
-      .then(({ body }) => {
-        const { reviews } = body;
-        expect(reviews).toHaveLength(13);
-        expect(
-          checkDescendingOrder(reviews.map((review) => review.created_at))
-        ).toBe(true);
       });
   });
 });
