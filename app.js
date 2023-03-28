@@ -1,28 +1,25 @@
 const express = require("express");
 const app = express();
 const { getCategories } = require("./controllers/category-controller");
-const { getReview } = require("./controllers/review-controller");
+const { getReview, getReviews } = require("./controllers/review-controller");
+const {
+  handleCustomErrors,
+  handlePsqlErrors,
+  handle500Errors,
+} = require("./errors/error-handling-functions");
 
 app.get("/api/categories", getCategories);
 
 app.get("/api/reviews/:review_id", getReview);
 
+app.get("/api/reviews", getReviews);
+
 app.use("*", (req, res, next) => {
   next({ status: 404, msg: "Data not found" });
 });
 
-app.use((err, req, res, next) => {
-  if (err.status && err.msg) {
-    res.status(err.status).send(err);
-  } else {
-    next(err);
-  }
-});
-
-app.use((err, req, res, next) => {
-  if (err.code === "22P02") {
-    res.status(400).send({ msg: "Bad request" });
-  } else res.status(500).send({ msg: "Internal Server Error" });
-});
+app.use(handleCustomErrors);
+app.use(handlePsqlErrors);
+app.use(handle500Errors);
 
 module.exports = app;
