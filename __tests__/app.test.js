@@ -416,3 +416,26 @@ describe("/api/reviews/:review_id/comments REPEATED", () => {
       });
   });
 });
+describe("/api/comments/:comment_id", () => {
+  test("204 DELETE should receive 204 status code", () => {
+    return request(app).delete("/api/comments/1").expect(204);
+  });
+  test("404 DELETE should receive not found message if comment_id is valid but doesn't exist", () => {
+    return request(app)
+      .delete("/api/comments/99999")
+      .expect(404)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Comment ID 99999 not found");
+      });
+  });
+  test("400 DELETE should receive bad request message if comment_id is not valid number", () => {
+    return request(app)
+      .delete("/api/comments/notANumber")
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Invalid data type");
+      });
+  });
+});

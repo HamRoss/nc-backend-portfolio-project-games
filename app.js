@@ -14,6 +14,8 @@ const {
   handle500Errors,
 } = require("./errors/error-handling-functions");
 
+const { deleteComment } = require("./controllers/comment-controller");
+
 app.use(express.json());
 
 app.get("/api/categories", getCategories);
@@ -27,6 +29,8 @@ app.patch("/api/reviews/:review_id", patchVotes);
 app.get("/api/reviews/:review_id/comments", getReviewComments);
 
 app.post("/api/reviews/:review_id/comments", postReviewComment);
+
+app.delete("/api/comments/:comment_id", deleteComment);
 
 app.use("*", (req, res, next) => {
   next({ status: 404, msg: "Data not found" });
