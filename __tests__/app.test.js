@@ -189,3 +189,99 @@ describe("/api/reviews", () => {
       });
   });
 });
+
+describe("/api/reviews/:review_id/comments REPEATED", () => {
+  test("201 POST responds with posted comment", () => {
+    const newComment = { username: "mallionaire", body: "Wow. Such fun" };
+    return request(app)
+      .post("/api/reviews/5/comments")
+      .send(newComment)
+      .expect(201)
+      .then(({ body }) => {
+        const { comment } = body;
+        expect(comment).toMatchObject({
+          comment_id: expect.any(Number),
+          body: "Wow. Such fun",
+          review_id: expect.any(Number),
+          author: "mallionaire",
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+        });
+      });
+  });
+  test("400 POST will return bad request message if input body is missing required fields", () => {
+    const newComment = { body: "This body is missing a username" };
+    return request(app)
+      .post("/api/reviews/7/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Missing required field(s)");
+      });
+  });
+  test("400 POST will return bad request if input body has all required fields, but user does not exist", () => {
+    const newComment = {
+      username: "RossHamilton",
+      body: "This user does not exist",
+    };
+    return request(app)
+      .post("/api/reviews/7/comments")
+      .send(newComment)
+      .expect(404)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Not found");
+      });
+  });
+  test("201 POST will ignore unnecessary properties", () => {
+    const newComment = {
+      username: "mallionaire",
+      body: "Amaze. Such game",
+      unecessary_property: "This should be ignored",
+    };
+    return request(app)
+      .post("/api/reviews/6/comments")
+      .send(newComment)
+      .expect(201)
+      .then(({ body }) => {
+        const { comment } = body;
+        expect(comment).toMatchObject({
+          comment_id: expect.any(Number),
+          body: "Amaze. Such game",
+          review_id: expect.any(Number),
+          author: "mallionaire",
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+        });
+      });
+  });
+  test("400 POST will return bad request error message if id is invalid", () => {
+    const newComment = {
+      username: "mallionaire",
+      body: "Such doge. Wow",
+    };
+    return request(app)
+      .post("/api/reviews/sausage/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Bad request");
+      });
+  });
+  test("404 POST will return not found error message if review id is valid but does not exist", () => {
+    const newComment = {
+      username: "mallionaire",
+      body: "Wuuuuuuuuuuew. Mighty fine game you got here",
+    };
+    return request(app)
+      .post("/api/reviews/9999/comments")
+      .send(newComment)
+      .expect(404)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Not found");
+      });
+  });
+});
