@@ -94,6 +94,129 @@ describe("/api/reviews", () => {
         ).toBe(true);
       });
   });
+  test("200 PATCH increment will respond with updated review, when valid request body increments existing review by the required number of positive votes", () => {
+    const inputObject = {
+      inc_votes: 20,
+    };
+    return request(app)
+      .patch("/api/reviews/1")
+      .send(inputObject)
+      .expect(200)
+      .then(({ body }) => {
+        const { review } = body;
+        expect(review).toEqual({
+          review_id: 1,
+          title: "Agricola",
+          designer: "Uwe Rosenberg",
+          owner: "mallionaire",
+          review_img_url:
+            "https://images.pexels.com/photos/974314/pexels-photo-974314.jpeg?w=700&h=700",
+          review_body: "Farmyard fun!",
+          category: "euro game",
+          created_at: expect.any(String),
+          votes: 21,
+        });
+      });
+  });
+  test("200 PATCH decrement will respond with updated review, when valid request body decrements existing review by the required number of negative votes", () => {
+    const inputObject = {
+      inc_votes: -21,
+    };
+    return request(app)
+      .patch("/api/reviews/1")
+      .send(inputObject)
+      .expect(200)
+      .then(({ body }) => {
+        const { review } = body;
+        expect(review).toEqual({
+          review_id: 1,
+          title: "Agricola",
+          designer: "Uwe Rosenberg",
+          owner: "mallionaire",
+          review_img_url:
+            "https://images.pexels.com/photos/974314/pexels-photo-974314.jpeg?w=700&h=700",
+          review_body: "Farmyard fun!",
+          category: "euro game",
+          created_at: expect.any(String),
+          votes: 0,
+        });
+      });
+  });
+  test("400 PATCH responds with bad request message if input object doesn't include inc_votes", () => {
+    const inputObject = {};
+    return request(app)
+      .patch("/api/reviews/1")
+      .send(inputObject)
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Missing required field(s)");
+      });
+  });
+  test("400 PATCH responds with bad request if input object has an invalid data type", () => {
+    const inputObject = {
+      inc_votes: "invalid data type",
+    };
+    return request(app)
+      .patch("/api/reviews/1")
+      .send(inputObject)
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Invalid data type");
+      });
+  });
+  test("200 PATCH will ignore unnecessary properties in the request body", () => {
+    const inputObject = {
+      inc_votes: 1,
+      unnecessary_property: 100,
+    };
+    return request(app)
+      .patch("/api/reviews/1")
+      .send(inputObject)
+      .expect(200)
+      .then(({ body }) => {
+        const { review } = body;
+        expect(review).toEqual({
+          review_id: 1,
+          title: "Agricola",
+          designer: "Uwe Rosenberg",
+          owner: "mallionaire",
+          review_img_url:
+            "https://images.pexels.com/photos/974314/pexels-photo-974314.jpeg?w=700&h=700",
+          review_body: "Farmyard fun!",
+          category: "euro game",
+          created_at: expect.any(String),
+          votes: 1,
+        });
+      });
+  });
+  test("404 PATCH returns not found message if review_id doesn't exist", () => {
+    const inputObject = {
+      inc_votes: 1,
+    };
+    return request(app)
+      .patch("/api/reviews/100000")
+      .send(inputObject)
+      .expect(404)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Can't update votes. Review ID 100000 not found");
+      });
+  });
+  test("400 PATCH returns bad request message if review_id is invalid", () => {
+    const inputObject = {
+      inc_votes: 1,
+    };
+    return request(app)
+      .patch("/api/reviews/invalidUrl")
+      .send(inputObject)
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Invalid data type");
+      });
+  });
 });
 
 describe("api/reviews/:review_id", () => {
@@ -132,7 +255,7 @@ describe("api/reviews/:review_id", () => {
       .expect(400)
       .then(({ body }) => {
         const { msg } = body;
-        expect(msg).toBe("Bad request");
+        expect(msg).toBe("Invalid data type");
       });
   });
 });
@@ -184,7 +307,7 @@ describe("/api/reviews/:review_id/comments", () => {
       .expect(400)
       .then(({ body }) => {
         const { msg } = body;
-        expect(msg).toBe("Bad request");
+        expect(msg).toBe("Invalid data type");
       });
   });
   test("200 GET responds with an empty array if review_id exists, but has no comments associated with it", () => {
@@ -275,7 +398,7 @@ describe("/api/reviews/:review_id/comments REPEATED", () => {
       .expect(400)
       .then(({ body }) => {
         const { msg } = body;
-        expect(msg).toBe("Bad request");
+        expect(msg).toBe("Invalid data type");
       });
   });
   test("404 POST will return not found error message if review id is valid but does not exist", () => {
