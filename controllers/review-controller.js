@@ -4,6 +4,7 @@ const {
   insertReviewComment,
   fetchReviewComments,
   checkReviewIdExists,
+  updateVotes,
 } = require("../models/review-model.js");
 
 function getReview(req, res, next) {
@@ -56,9 +57,22 @@ function postReviewComment(req, res, next) {
     });
 }
 
+function patchVotes(req, res, next) {
+  const { review_id } = req.params;
+  const { inc_votes } = req.body;
+  updateVotes(review_id, inc_votes)
+    .then((review) => {
+      res.status(200).send({ review });
+    })
+    .catch((err) => {
+      next(err);
+    });
+}
+
 module.exports = {
   getReview,
   getReviews,
   postReviewComment,
   getReviewComments,
+  patchVotes,
 };

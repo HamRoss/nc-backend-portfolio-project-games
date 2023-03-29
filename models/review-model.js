@@ -77,10 +77,29 @@ RETURNING *;
   });
 }
 
+function updateVotes(id, votes) {
+  const queryString = `
+  UPDATE reviews
+  SET votes = votes + $1
+  WHERE review_id = $2 
+  RETURNING *;`;
+  const values = [votes, id];
+  return db.query(queryString, values).then((response) => {
+    if (response.rowCount === 0) {
+      return Promise.reject({
+        status: 404,
+        msg: `Can't update votes. Review ID ${id} not found`,
+      });
+    }
+    return response.rows[0];
+  });
+}
+
 module.exports = {
   fetchReview,
   fetchReviews,
   fetchReviewComments,
   checkReviewIdExists,
   insertReviewComment,
+  updateVotes,
 };
