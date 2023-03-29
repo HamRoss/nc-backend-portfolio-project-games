@@ -53,8 +53,6 @@ function fetchReviews() {
     "SELECT reviews.review_id, owner, title, category, review_img_url, reviews.created_at, reviews.votes, designer, COUNT(comments.comment_id) as comment_count FROM reviews LEFT JOIN comments ON reviews.review_id = comments.review_id GROUP BY reviews.review_id, reviews.owner, reviews.title, reviews.category, reviews.review_img_url, reviews.created_at, reviews.votes, reviews.designer ORDER BY reviews.created_at DESC;";
   return db.query(queryString).then((res) => {
     const reviews = res.rows;
-    console.log(reviews);
-
     const mappedReviews = reviews.map((review) => {
       review.comment_count = Number(review.comment_count);
       review.created_at = Number(review.created_at);
@@ -64,9 +62,25 @@ function fetchReviews() {
   });
 }
 
+function insertReviewComment(author, body, reviewId) {
+  const queryString = `
+INSERT INTO comments
+(body, review_id, author)
+VALUES ($1, $2, $3)
+RETURNING *;
+`;
+
+  const values = [body, reviewId, author];
+
+  return db.query(queryString, values).then((response) => {
+    return response.rows[0];
+  });
+}
+
 module.exports = {
   fetchReview,
   fetchReviews,
   fetchReviewComments,
   checkReviewIdExists,
+  insertReviewComment,
 };

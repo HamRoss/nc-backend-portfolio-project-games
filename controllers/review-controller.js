@@ -1,8 +1,9 @@
 const {
   fetchReview,
+  fetchReviews,
+  insertReviewComment,
   fetchReviewComments,
   checkReviewIdExists,
-  fetchReviews,
 } = require("../models/review-model.js");
 
 function getReview(req, res, next) {
@@ -43,4 +44,21 @@ function getReviews(req, res, next) {
     });
 }
 
-module.exports = { getReview, getReviews, getReviewComments };
+function postReviewComment(req, res, next) {
+  const { review_id } = req.params;
+  const { username, body } = req.body;
+  insertReviewComment(username, body, review_id)
+    .then((comment) => {
+      res.status(201).send({ comment });
+    })
+    .catch((err) => {
+      next(err);
+    });
+}
+
+module.exports = {
+  getReview,
+  getReviews,
+  postReviewComment,
+  getReviewComments,
+};

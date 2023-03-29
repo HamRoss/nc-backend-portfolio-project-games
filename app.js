@@ -4,6 +4,7 @@ const { getCategories } = require("./controllers/category-controller");
 const {
   getReview,
   getReviews,
+  postReviewComment,
   getReviewComments,
 } = require("./controllers/review-controller");
 const {
@@ -12,6 +13,8 @@ const {
   handle500Errors,
 } = require("./errors/error-handling-functions");
 
+app.use(express.json());
+
 app.get("/api/categories", getCategories);
 
 app.get("/api/reviews", getReviews);
@@ -19,6 +22,8 @@ app.get("/api/reviews", getReviews);
 app.get("/api/reviews/:review_id", getReview);
 
 app.get("/api/reviews/:review_id/comments", getReviewComments);
+
+app.post("/api/reviews/:review_id/comments", postReviewComment);
 
 app.use("*", (req, res, next) => {
   next({ status: 404, msg: "Data not found" });
