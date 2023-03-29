@@ -5,6 +5,7 @@ const {
   getReview,
   getReviews,
   postReviewComment,
+  getReviewComments,
 } = require("./controllers/review-controller");
 const {
   handleCustomErrors,
@@ -18,6 +19,7 @@ app.get("/api/categories", getCategories);
 
 app.get("/api/reviews/:review_id", getReview);
 
+app.get("/api/reviews/:review_id/comments", getReviewComments);
 app.get("/api/reviews", getReviews);
 
 app.post("/api/reviews/:review_id/comments", postReviewComment);
