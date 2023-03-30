@@ -439,3 +439,31 @@ describe("/api/comments/:comment_id", () => {
       });
   });
 });
+describe("/api/users", () => {
+  test("200 GET responds with array of user objects with correct properties", () => {
+    return request(app)
+      .get("/api/users")
+      .expect(200)
+      .then(({ body }) => {
+        const { users } = body;
+        expect(users).toHaveLength(4);
+
+        users.forEach((user) => {
+          expect(user).toMatchObject({
+            username: expect.any(String),
+            name: expect.any(String),
+            avatar_url: expect.any(String),
+          });
+        });
+      });
+  });
+  test("404 GET responds with not found message if users is misspelled", () => {
+    return request(app)
+      .get("/api/uuusers")
+      .expect(404)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Data not found");
+      });
+  });
+});
