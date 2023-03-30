@@ -5,6 +5,7 @@ const {
   fetchReviewComments,
   checkReviewIdExists,
   updateVotes,
+  checkCategoryExists,
 } = require("../models/review-model.js");
 
 function getReview(req, res, next) {
@@ -36,9 +37,17 @@ function getReviewComments(req, res, next) {
 }
 
 function getReviews(req, res, next) {
-  fetchReviews()
+  const { category, sort_by, order } = req.query;
+  fetchReviews(category, sort_by, order)
     .then((reviews) => {
+      if (reviews.length === 0) {
+        return checkCategoryExists(category);
+      }
+
       res.status(200).send({ reviews });
+    })
+    .then(() => {
+      res.status(200).send({ reviews: [] });
     })
     .catch((err) => {
       next(err);

@@ -15,6 +15,24 @@ function fetchReview(id) {
   });
 }
 
+function checkCategoryExists(category) {
+  const queryString = `
+  SELECT * 
+  FROM categories
+  WHERE slug = $1;
+  `;
+  const queryValue = [category];
+  return db.query(queryString, queryValue).then((response) => {
+    if (response.rowCount === 0) {
+      return Promise.reject({
+        status: 404,
+        msg: `Category ${category} not found`,
+      });
+    }
+    return response.rows;
+  });
+}
+
 function fetchReviewComments(id) {
   const queryString = `
   SELECT * FROM comments 
@@ -48,10 +66,47 @@ WHERE review_id = $1
   });
 }
 
-function fetchReviews() {
-  const queryString =
-    "SELECT reviews.review_id, owner, title, category, review_img_url, reviews.created_at, reviews.votes, designer, COUNT(comments.comment_id) as comment_count FROM reviews LEFT JOIN comments ON reviews.review_id = comments.review_id GROUP BY reviews.review_id, reviews.owner, reviews.title, reviews.category, reviews.review_img_url, reviews.created_at, reviews.votes, reviews.designer ORDER BY reviews.created_at DESC;";
-  return db.query(queryString).then((res) => {
+function fetchReviews(category, sortBy = "reviews.created_at", order = "desc") {
+  if (
+    ![
+      "review_id",
+      "owner",
+      "title",
+      "category",
+      "review_img_url",
+      "created_at",
+      "votes",
+      "designer",
+      "comment_count",
+      "reviews.created_at",
+    ].includes(sortBy)
+  ) {
+    return Promise.reject({ status: 400, msg: `You can't sort by ${sortBy}` });
+  }
+  if (!["asc", "desc", "ASC", "DESC"].includes(order)) {
+    return Promise.reject({ status: 400, msg: `You can't order by ${order}` });
+  }
+
+  if (sortBy === "comment_count") {
+    sortBy = "COUNT(comments.comment_id)";
+  }
+  const queryValues = [];
+  let queryString = `
+    SELECT reviews.review_id, owner, title, category, review_img_url, reviews.created_at, reviews.votes, designer, 
+    COUNT(comments.comment_id) as comment_count 
+    FROM reviews
+    LEFT JOIN comments 
+    ON reviews.review_id = comments.review_id 
+    `;
+  if (category) {
+    queryValues.push(category);
+    queryString += `WHERE category = $1`;
+  }
+  queryString += ` 
+    
+    GROUP BY reviews.review_id, reviews.owner, reviews.title, reviews.category, reviews.review_img_url, reviews.created_at, reviews.votes, reviews.designer 
+    ORDER BY ${sortBy} ${order};`;
+  return db.query(queryString, queryValues).then((res) => {
     const reviews = res.rows;
     const mappedReviews = reviews.map((review) => {
       review.comment_count = Number(review.comment_count);
@@ -102,4 +157,5 @@ module.exports = {
   checkReviewIdExists,
   insertReviewComment,
   updateVotes,
+  checkCategoryExists,
 };
