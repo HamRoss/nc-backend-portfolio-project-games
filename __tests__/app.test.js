@@ -94,6 +94,181 @@ describe("/api/reviews", () => {
         ).toBe(true);
       });
   });
+  test("200 GET will respond with group of review objects where reviews is queried by category", () => {
+    return request(app)
+      .get("/api/reviews?category=social%20deduction")
+      .expect(200)
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews).toHaveLength(11);
+
+        reviews.forEach((review) => {
+          expect(review).toMatchObject({
+            review_id: expect.any(Number),
+            owner: expect.any(String),
+            title: expect.any(String),
+            category: expect.any(String),
+            review_img_url: expect.any(String),
+            created_at: expect.any(Number),
+            votes: expect.any(Number),
+            designer: expect.any(String),
+            comment_count: expect.any(Number),
+          });
+        });
+      });
+  });
+  test("200 GET will respond with all reviews if category query is included in url but value is omitted", () => {
+    return request(app)
+      .get("/api/reviews?category=")
+      .expect(200)
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews).toHaveLength(13);
+
+        reviews.forEach((review) => {
+          expect(review).toMatchObject({
+            review_id: expect.any(Number),
+            owner: expect.any(String),
+            title: expect.any(String),
+            category: expect.any(String),
+            review_img_url: expect.any(String),
+            created_at: expect.any(Number),
+            votes: expect.any(Number),
+            designer: expect.any(String),
+            comment_count: expect.any(Number),
+          });
+        });
+      });
+  });
+  test("200 GET will sort all results by review_id in descending order if not specified", () => {
+    return request(app)
+      .get("/api/reviews?sort_by=review_id")
+      .expect(200)
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews).toHaveLength(13);
+        const mappedReviews = reviews.map((review) => {
+          return review.review_id;
+        });
+        expect(mappedReviews).toBeSorted({ descending: true });
+      });
+  });
+  test("200 GET will sort all results by votes in descending order if not specified", () => {
+    return request(app)
+      .get("/api/reviews?sort_by=votes")
+      .expect(200)
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews).toHaveLength(13);
+        const mappedReviews = reviews.map((review) => {
+          return review.votes;
+        });
+        expect(mappedReviews).toBeSorted({ descending: true });
+      });
+  });
+  test("200 GET will sort all results by comment_count in descending order if not specified", () => {
+    return request(app)
+      .get("/api/reviews?sort_by=comment_count")
+      .expect(200)
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews).toHaveLength(13);
+        const mappedReviews = reviews.map((review) => {
+          return review.comment_count;
+        });
+        expect(mappedReviews).toBeSorted({ descending: true });
+      });
+  });
+  test("200 GET will return specific categories, sorted by an additional variable if request includes categories and sort by queries", () => {
+    return request(app)
+      .get("/api/reviews?category=social%20deduction&sort_by=votes")
+      .expect(200)
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews).toHaveLength(11);
+        const mappedReviews = reviews.map((review) => {
+          return review.votes;
+        });
+        expect(mappedReviews).toBeSorted({ descending: true });
+      });
+  });
+  test("200 GET will return all results sorted by date in ascending order if sort_by is not defined but order is ascending", () => {
+    return request(app)
+      .get("/api/reviews?order=asc")
+      .expect(200)
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews).toHaveLength(13);
+        const mappedReviews = reviews.map((review) => {
+          return review.created_at;
+        });
+        expect(mappedReviews).toBeSorted();
+      });
+  });
+  test("200 GET will return all results sorted by another variable in ascending order if sort_by is defined and order is ascending", () => {
+    return request(app)
+      .get("/api/reviews?sort_by=votes&order=asc")
+      .expect(200)
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews).toHaveLength(13);
+        const mappedReviews = reviews.map((review) => {
+          return review.votes;
+        });
+        expect(mappedReviews).toBeSorted();
+      });
+  });
+  test("200 GET will return results matching a specific category, sorted by a variable, in ascending order, if category and sort_by are defined, and order is ascending", () => {
+    return request(app)
+      .get("/api/reviews?category=social%20deduction&sort_by=votes&order=asc")
+      .expect(200)
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews).toHaveLength(11);
+        const mappedReviews = reviews.map((review) => {
+          return review.votes;
+        });
+        expect(mappedReviews).toBeSorted();
+      });
+  });
+  test("404 GET will return an error message if a category doesn't exist", () => {
+    return request(app)
+      .get("/api/reviews?category=sausages")
+      .expect(404)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Category sausages not found");
+      });
+  });
+  test("200 GET will return an empty array when category exists, but doesn't match any reviews", () => {
+    return request(app)
+      .get("/api/reviews?category=children's+games")
+      .expect(200)
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews).toEqual([]);
+      });
+  });
+  test("400 GET will return bad request message if sort_by value doesn't match a column", () => {
+    return request(app)
+      .get("/api/reviews?sort_by=sausages")
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("You can't sort by sausages");
+      });
+  });
+  test("400 GET allow requests that order by anything except asc, desc, ASC, or DESC", () => {
+    return request(app)
+      .get("/api/reviews?order=sausages")
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("You can't order by sausages");
+      });
+  });
+  //wont allow you to order by anything except asc or desc
+
   test("200 PATCH increment will respond with updated review, when valid request body increments existing review by the required number of positive votes", () => {
     const inputObject = {
       inc_votes: 20,
