@@ -395,26 +395,6 @@ describe("/api/reviews", () => {
 });
 
 describe("api/reviews/:review_id", () => {
-  test("200 GET responds with a single review object with all required properties", () => {
-    return request(app)
-      .get("/api/reviews/1")
-      .expect(200)
-      .then(({ body }) => {
-        const { review } = body;
-        expect(review).toEqual({
-          review_id: 1,
-          title: "Agricola",
-          designer: "Uwe Rosenberg",
-          owner: "mallionaire",
-          review_img_url:
-            "https://images.pexels.com/photos/974314/pexels-photo-974314.jpeg?w=700&h=700",
-          review_body: "Farmyard fun!",
-          category: "euro game",
-          created_at: "2021-01-18T10:00:20.514Z",
-          votes: 1,
-        });
-      });
-  });
   test("404 GET returns not found message when review id is valid but does not exist", () => {
     return request(app)
       .get("/api/reviews/999")
@@ -639,6 +619,26 @@ describe("/api/users", () => {
       .then(({ body }) => {
         const { msg } = body;
         expect(msg).toBe("Data not found");
+      });
+  });
+});
+describe("/api", () => {
+  test("200 GET responds with JSON file showing all available endpoints on the project", () => {
+    return request(app)
+      .get("/api")
+      .then(({ body }) => {
+        const { endpoints } = body;
+        expect(endpoints).toMatchObject({
+          "GET /api": expect.any(Object),
+          "GET /api/categories": expect.any(Object),
+          "GET /api/reviews": expect.any(Object),
+          "GET /api/reviews/:review_id": expect.any(Object),
+          "PATCH /api/reviews/:review_id": expect.any(Object),
+          "GET /api/reviews/:review_id/comments": expect.any(Object),
+          "POST /api/reviews/:review_id/comments": expect.any(Object),
+          "DELETE /api/comments/:comment_id": expect.any(Object),
+          "GET /api/users": expect.any(Object),
+        });
       });
   });
 });

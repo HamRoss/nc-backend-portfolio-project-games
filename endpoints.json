@@ -30,5 +30,88 @@
         }
       ]
     }
+  },
+  "GET /api/reviews/:review_id": {
+    "description": "serves an object containing one review",
+    "queries": [],
+    "exampleResponse": {
+      "review": {
+        "review_id": 1,
+        "title": "Culture a Love of Agriculture With Agricola",
+        "category": "strategy",
+        "designer": "Uwe Rosenberg",
+        "owner": "tickle122",
+        "review_body": "You could sum up Agricola with the simple phrase 'Farmyard Fun' but the mechanics and game play add so much more than that. You'll find yourself torn between breeding pigs, or sowing crops. Its joyeous and rewarding and it makes you think of time spent outside, which is much harder to do these days!",
+        "review_img_url": "https://images.pexels.com/photos/974314/pexels-photo-974314.jpeg?w=700&h=700",
+        "created_at": "2021-01-18T10:00:20.514Z",
+        "votes": 1
+      }
+    }
+  },
+  "PATCH /api/reviews/:review_id": {
+    "description": "updates the votes property on a review by a specified amount and serves an object containing the updated review",
+    "exampleRequestBody": { "inc_votes": 1 },
+    "exampleResponse": {
+      "review": {
+        "review_id": 1,
+        "title": "Agricola",
+        "designer": "Uwe Rosenberg",
+        "owner": "mallionaire",
+        "review_img_url": "https://images.pexels.com/photos/974314/pexels-photo-974314.jpeg?w=700&h=700",
+        "review_body": "Farmyard fun!",
+        "category": "euro game",
+        "created_at": "2021-01-18T10:00:20.514Z",
+        "votes": 21
+      }
+    }
+  },
+  "GET /api/reviews/:review_id/comments": {
+    "description": "serves an array containing all comments about a specified review",
+    "queries": [],
+    "exampleResponse": {
+      "comments": [
+        {
+          "comment_id": 19,
+          "body": "Quis duis mollit ad enim deserunt.",
+          "review_id": 3,
+          "author": "jessjelly",
+          "votes": 3,
+          "created_at": 1616874538110
+        }
+      ]
+    }
+  },
+  "POST /api/reviews/:review_id/comments": {
+    "description": "adds a new commment to a specified review and serves an object containing the comment",
+    "exampleRequestBody": {
+      "username": "mallionaire",
+      "body": "Wow. Such fun"
+    },
+    "exampleResponse": {
+      "comment": {
+        "comment_id": 19,
+        "body": "Quis duis mollit ad enim deserunt.",
+        "review_id": 3,
+        "author": "jessjelly",
+        "votes": 3,
+        "created_at": 1616874538110
+      }
+    }
+  },
+  "DELETE /api/comments/:comment_id": {
+    "description": "removes a specified comment"
+  },
+  "GET /api/users": {
+    "description": "serves an array of all users",
+    "queries": [],
+    "exampleResponse": {
+      "users": [
+        {
+          "username": "tickle122",
+          "name": "Tom Tickle",
+          "avatar_url": "https://vignette.wikia.nocookie.net/mrmen/images/d/d6/Mr-Tickle-9a.png/revision/latest?cb=20180127221953"
+        }
+      ]
+    }
   }
 }
