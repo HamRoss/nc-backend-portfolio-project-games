@@ -395,26 +395,6 @@ describe("/api/reviews", () => {
 });
 
 describe("api/reviews/:review_id", () => {
-  test("200 GET responds with a single review object with all required properties", () => {
-    return request(app)
-      .get("/api/reviews/1")
-      .expect(200)
-      .then(({ body }) => {
-        const { review } = body;
-        expect(review).toEqual({
-          review_id: 1,
-          title: "Agricola",
-          designer: "Uwe Rosenberg",
-          owner: "mallionaire",
-          review_img_url:
-            "https://images.pexels.com/photos/974314/pexels-photo-974314.jpeg?w=700&h=700",
-          review_body: "Farmyard fun!",
-          category: "euro game",
-          created_at: "2021-01-18T10:00:20.514Z",
-          votes: 1,
-        });
-      });
-  });
   test("404 GET returns not found message when review id is valid but does not exist", () => {
     return request(app)
       .get("/api/reviews/999")
@@ -431,6 +411,48 @@ describe("api/reviews/:review_id", () => {
       .then(({ body }) => {
         const { msg } = body;
         expect(msg).toBe("Invalid data type");
+      });
+  });
+  test("200 GET returns a review object with all required properties, including comment_count, when passed a valid review_id that exists and has one or more comments associated with it", () => {
+    return request(app)
+      .get("/api/reviews/3")
+      .expect(200)
+      .then(({ body }) => {
+        const { review } = body;
+        expect(review).toEqual({
+          review_id: 3,
+          title: "Ultimate Werewolf",
+          designer: "Akihisa Okui",
+          owner: "bainesface",
+          review_img_url:
+            "https://images.pexels.com/photos/5350049/pexels-photo-5350049.jpeg?w=700&h=700",
+          category: "social deduction",
+          review_body: "We couldn't find the werewolf!",
+          created_at: "2021-01-18T10:01:41.251Z",
+          votes: 5,
+          comment_count: 3,
+        });
+      });
+  });
+  test("200 GET returns a review object with all required properties and a comment_count of zero, when passed a valid review_id that exists, but has no comments associated with it", () => {
+    return request(app)
+      .get("/api/reviews/1")
+      .expect(200)
+      .then(({ body }) => {
+        const { review } = body;
+        expect(review).toEqual({
+          review_id: 1,
+          title: "Agricola",
+          designer: "Uwe Rosenberg",
+          owner: "mallionaire",
+          review_img_url:
+            "https://images.pexels.com/photos/974314/pexels-photo-974314.jpeg?w=700&h=700",
+          review_body: "Farmyard fun!",
+          category: "euro game",
+          created_at: "2021-01-18T10:00:20.514Z",
+          votes: 1,
+          comment_count: 0,
+        });
       });
   });
 });
