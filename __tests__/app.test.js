@@ -664,3 +664,23 @@ describe("/api/users", () => {
       });
   });
 });
+describe("/api", () => {
+  test("200 GET responds with JSON file showing all available endpoints on the project", () => {
+    return request(app)
+      .get("/api")
+      .then(({ body }) => {
+        const { endpoints } = body;
+        expect(endpoints).toMatchObject({
+          "GET /api": expect.any(Object),
+          "GET /api/categories": expect.any(Object),
+          "GET /api/reviews": expect.any(Object),
+          "GET /api/reviews/:review_id": expect.any(Object),
+          "PATCH /api/reviews/:review_id": expect.any(Object),
+          "GET /api/reviews/:review_id/comments": expect.any(Object),
+          "POST /api/reviews/:review_id/comments": expect.any(Object),
+          "DELETE /api/comments/:comment_id": expect.any(Object),
+          "GET /api/users": expect.any(Object),
+        });
+      });
+  });
+});
