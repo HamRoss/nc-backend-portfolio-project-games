@@ -1,7 +1,19 @@
 const db = require("../db/connection");
 
 function fetchReview(id) {
-  const queryString = "SELECT * FROM reviews WHERE review_id = $1;";
+  const queryString = `SELECT reviews.*,
+COUNT(comments.comment_id) as comment_count
+FROM
+reviews
+LEFT JOIN
+comments
+ON
+reviews.review_id = comments.review_id
+WHERE
+reviews.review_id = $1
+GROUP BY
+reviews.review_id;
+  `;
   const value = [id];
   return db.query(queryString, value).then((response) => {
     const review = response.rows[0];
@@ -11,6 +23,7 @@ function fetchReview(id) {
         msg: `No review found for review_id ${id}`,
       });
     }
+    review.comment_count = Number(review.comment_count);
     return review;
   });
 }
